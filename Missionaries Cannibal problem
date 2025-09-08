@@ -1,0 +1,61 @@
+from collections import deque
+
+# State: (missionaries_left, cannibals_left, boat_side)
+# boat_side = 1 (left), 0 (right)
+start = (3, 3, 1)
+goal = (0, 0, 0)
+
+def is_valid(state):
+    m_left, c_left, _ = state
+    m_right, c_right = 3 - m_left, 3 - c_left
+    
+    # No group can be negative
+    if m_left < 0 or c_left < 0 or m_right < 0 or c_right < 0:
+        return False
+    
+    # Missionaries cannot be outnumbered by cannibals (left or right)
+    if (m_left > 0 and c_left > m_left) or (m_right > 0 and c_right > m_right):
+        return False
+    
+    return True
+
+def get_successors(state):
+    m, c, boat = state
+    moves = []
+    if boat == 1:  # Boat on left side
+        directions = [(-2,0), (-1,0), (0,-2), (0,-1), (-1,-1)]
+    else:  # Boat on right side
+        directions = [(2,0), (1,0), (0,2), (0,1), (1,1)]
+    
+    for dm, dc in directions:
+        new_state = (m + dm, c + dc, 1 - boat)
+        if is_valid(new_state):
+            moves.append(new_state)
+    return moves
+
+def bfs():
+    queue = deque()
+    queue.append((start, [start]))  # state + path
+    visited = set()
+    
+    while queue:
+        state, path = queue.popleft()
+        
+        if state == goal:
+            return path
+        
+        for next_state in get_successors(state):
+            if next_state not in visited:
+                visited.add(next_state)
+                queue.append((next_state, path + [next_state]))
+    return None
+
+if __name__ == "__main__":
+    solution = bfs()
+    
+    if solution:
+        print("✅ Solution found!\n")
+        for step in solution:
+            print(step)
+    else:
+        print("❌ No solution.")
